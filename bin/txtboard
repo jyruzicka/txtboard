@@ -1,0 +1,96 @@
+#!/usr/bin/env ruby
+
+require "trollop"
+require "fileutils"
+require "txtboard"
+
+opts = Trollop::options do
+	banner <<-EOS
+Txtboard is a program to display your current OmniFocus projects in a
+kanban-style layout, right here in the terminal.
+
+# Basic usage
+
+The first time you run txtboard, it will set up a configuration folder and
+place various files in it. By default, txtboard will store data in
+~/.txtboard. If you don't want to store data here, use the --config flag to
+select where you'd like to store it.
+
+# Other options
+
+* Use --height to set the maximum height of the board. Any data beyond this
+  will be cut off.
+* Use --width to set the width of the board. Wider boards mean more space on
+  each project card.
+* Use --cached if you don't want to update data, but just display the board.
+
+# Advanced voodoo
+
+* Use --setup to just set up the configuration folder, but not run a data
+  fetch. Useful if you want to edit the config file right away.
+* Use --reset to remove the database file. Useful if you want to change the
+  data source (see below).
+
+# Using Omni Sync Server
+
+To use the Omni Sync Server, run txtboard with the --setup flag to create a
+config file. Next, open the config file and follow the instructions therein.
+
+**NOTE**: This method requires you to store your Omni Sync Server password in
+cleartext.
+
+If you have already run txtboard, you will need to reset the database (using
+the --reset flag) before the change will take effect.
+
+EOS
+
+	opt :width, "Width of the kanban board in chars", type: :int
+	opt :height, "Max height of the kanban board in lines", type: :int
+	opt :config, "Configuration directory", type: String, default: File.join(ENV["HOME"], ".txtboard")
+	opt :cached, "Use cached data, don't sync."
+	opt :setup, "Just make sure that configuration files are installed, but don't run"
+	opt :reset, "Clear current database"
+end
+
+Txtboard.location = opts[:config]
+Txtboard.height = opts[:height]
+Txtboard.width = opts[:width]
+
+#---------------------------------------
+# The reset option means we should delete the database and quit.
+if opts[:reset]
+	db_file = File.join(Txtboard.location, "db.yaml")
+	if File.exists?(db_file)
+		FileUtils::rm(db_file)
+		puts "Database file deleted."
+	else
+		puts "Database file doesn't exist!"
+	end
+	exit 0
+end
+
+#---------------------------------------
+# If no config exists, create and populate with defaults
+if !File.exists?(opts[:config])
+	Txtboard.setup(opts[:config])
+end
+
+#---------------------------------------
+# If setup flag is set, quit now.
+if opts[:setup]
+	puts "Config directory set up."
+	exit 0
+end
+
+#---------------------------------------
+# Finished initializing config. Let's do this
+Dir[File.join(opts[:config], "columns/*")].each{ |f| require f }
+Txtboard.set_column_widths!
+
+Txtboard.load_projects!(should_update: !opts[:cached])
+
+# Print title
+puts Txtboard.title
+puts ""
+puts Txtboard.column_heads
+puts Txtboard.body

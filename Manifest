@@ -1,0 +1,17 @@
+# INCLUDE bin/**/*
+# INCLUDE lib/**/*
+# INCLUDE *
+# EXCLUDE **/.DS_Store
+# EXCLUDE .rarity
+
+bin/txtboard
+lib/txtboard.rb
+lib/txtboard/column.rb
+lib/txtboard/core_ext.rb
+lib/txtboard/property.rb
+lib/txtboard/setup.rb
+lib/txtboard/txtboard_core.rb
+Manifest
+README.md
+txtboard.gemspec
+version.txt
