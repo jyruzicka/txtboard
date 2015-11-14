@@ -69,8 +69,8 @@ Omni Sync Server is still not fully supported, so please be aware of the followi
 * Your first sync may take some time. I recommend syncing all registered devices with Omni Sync Server before running.
 * Since txtboard doesn't register with Omni Sync Server like a good citizen, the server may decide to reconcile all its updates, leaving poor old txtboard stranded at an unreachable patch number. You can avoid this by regularly running/updating txtboard. In future updates, txtboard will let you know when it's come out of sync with the OSS: for now, if you find that your board has stopped updating, try resetting and re-downloading.
 
-# Version history
+## Version history
 
-## 0.2.0 // 2015-11-14
+### 0.2.0 // 2015-11-14
 
 * First public release!
